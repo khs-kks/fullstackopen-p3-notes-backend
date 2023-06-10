@@ -3,6 +3,10 @@ const app = express();
 
 app.use(express.json());
 
+const generateId = () => {
+    return Math.floor(Math.random() * 1000000);
+}
+
 let persons = [
     {
         "id": 1,
@@ -57,6 +61,19 @@ app.delete("/api/persons/:id", (req, res) => {
     res.status(204).end();
 });
 
+app.post("/api/persons", (req, res) => {
+    const body = req.body;
+    if (!body.name || !body.number) {
+        return res.status(400).end();
+    }
+    const newPerson = {
+        "id": generateId(),
+        "name": body.name,
+        "number": body.number
+    }
+    persons = persons.concat(newPerson);
+    res.status(201).json(newPerson);
+})
 
 const PORT = 3002
 app.listen(PORT, () => {
