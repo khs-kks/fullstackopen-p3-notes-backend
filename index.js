@@ -4,7 +4,7 @@ const cors = require('cors')
 
 
 const app = express();
-app.use(cors())
+// app.use(cors())
 
 morgan.token('postData', (req) => {
     return JSON.stringify(req.body);
@@ -94,6 +94,12 @@ app.post("/api/persons", (req, res) => {
     persons = persons.concat(newPerson);
     res.status(201).json(newPerson);
 })
+
+const unknownEndpoint = (req, res) => {
+    res.status(404).json({ error: "unknown endpoint" });
+}
+
+app.use(unknownEndpoint);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
