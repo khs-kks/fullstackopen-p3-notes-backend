@@ -58,7 +58,30 @@ app.delete("/api/persons/:id", (req, res) => {
     res.status(204).end();
 });
 
-app.post("/api/persons", (req, res) => {
+// app.post("/api/persons", (req, res) => {
+//     const body = req.body;
+//     if (!body.name || !body.number) {
+//         return res.status(400).json({
+//             error: "name or number missing"
+//         })
+//     }
+
+//     if (persons.find(person => person.name === body.name)) {
+//         return res.status(400).json({
+//             error: "name must be unique"
+//         })
+//     }
+
+//     const newPerson = {
+//         "id": generateId(),
+//         "name": body.name,
+//         "number": body.number
+//     }
+//     persons = persons.concat(newPerson);
+//     res.status(201).json(newPerson);
+// })
+
+app.post("/api/persons", async (req, res) => {
     const body = req.body;
     if (!body.name || !body.number) {
         return res.status(400).json({
@@ -66,20 +89,21 @@ app.post("/api/persons", (req, res) => {
         })
     }
 
-    if (persons.find(person => person.name === body.name)) {
+    const existingPerson = await Person.findOne({ name: body.name });
+    if (existingPerson) {
         return res.status(400).json({
             error: "name must be unique"
         })
     }
 
-    const newPerson = {
-        "id": generateId(),
-        "name": body.name,
-        "number": body.number
-    }
-    persons = persons.concat(newPerson);
-    res.status(201).json(newPerson);
-})
+    const newPerson = new Person({
+        name: body.name,
+        number: body.number
+    });
+
+    const savedPerson = await newPerson.save();
+    res.status(201).json(savedPerson);
+});
 
 const unknownEndpoint = (req, res) => {
     res.status(404).json({ error: "unknown endpoint" });

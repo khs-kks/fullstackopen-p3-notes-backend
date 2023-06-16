@@ -1,7 +1,27 @@
-POST http://localhost:3002/api/persons
-content-type: application/json
+@host = http://localhost:3001
+
+### POST /api/persons with valid data
+POST http://localhost:3001/api/persons
+Content-Type: application/json
 
 {
-    "name": "John Doe",
-    "number": "+359 888 415 990"
+  "name": "John Doe2",
+  "number": "555-1234"
+}
+
+### POST /api/persons with missing name
+POST {{host}}/api/persons
+Content-Type: application/json
+
+{
+  "number": "555-1234"
+}
+
+### POST /api/persons with duplicate name
+POST {{host}}/api/persons
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "number": "555-1234"
 }
