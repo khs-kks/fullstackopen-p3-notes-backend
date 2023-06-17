@@ -118,6 +118,34 @@ app.post("/api/persons", async (req, res) => {
     res.status(201).json(savedPerson);
 });
 
+app.put('/api/persons/:id', (req, res, next) => {
+    const { name, number } = req.body;
+    const id = req.params.id;
+
+    Person.findById(id)
+        .then(person => {
+            if (person === null) {
+                const error = new Error('Person not found');
+                error.name = 'NotFoundError';
+                next(error);
+            } else {
+                if (person.number !== number && number !== '') {
+                    // person.name = name;
+                    person.number = number;
+                    return person.save();
+                } else {
+                    return person;
+                }
+            }
+        })
+        .then(updatedPerson => {
+            res.json(updatedPerson);
+        })
+        .catch(error => {
+            next(error);
+        });
+});
+
 const unknownEndpoint = (req, res) => {
     res.status(404).json({ error: "unknown endpoint" });
 }
