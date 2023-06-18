@@ -92,7 +92,7 @@ app.put('/api/persons/:id', (req, res, next) => {
     // Get the id from the request parameters
     const id = req.params.id;
 
-    // Find the person with the specified id
+    // Find the person with the specified id in Mongo
     Person.findById(id)
         .then(person => {
             // If the person with the specified id is not found, throw an error
@@ -101,13 +101,13 @@ app.put('/api/persons/:id', (req, res, next) => {
                 error.name = 'NotFoundError';
                 next(error);
             } else {
-                // If the person with the specified id is found and the number or name is the same as the existing person object, throw an error
-                if (number === '' || person.name === name) {
-                    const error = new Error('Name or number must be different than the existing one');
+                // If the person with the specified id is found and the number is empty or name is the same as the existing person object, throw an error
+                if (number === '' || person.name !== name) {
+                    const error = new Error('Number cannot be empty and name must be the same as the existing person object');
                     error.name = 'ValidationError';
                     next(error);
                 } else {
-                    // If the person with the specified id is found and the number and name are different, update their number if it has changed
+                    // If the person with the specified id is found and the number is different, update their number
                     if (person.number !== number) {
                         person.number = number;
                         // Save the updated person object
