@@ -31,12 +31,29 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
-app.get("/info", (req, res) => {
-    res.send(
-        `<p>Phonebook has info for ${persons.length} people</p>
-         <p>${new Date()}</p>`
-    )
-})
+// app.get("/info", (req, res) => {
+//     res.send(
+//         `<p>Phonebook has info for ${persons.length} people</p>
+//          <p>${new Date()}</p>`
+//     )
+// })
+
+app.get("/info", async (req, res, next) => {
+    try {
+        // retrieve the count of documents from the person collection
+        const count = await Person.countDocuments();
+
+        // send the response with the count of persons and current date
+        res.send(
+            `<p>Phonebook has info for ${count} people</p>
+             <p>${new Date()}</p>`
+        );
+    } catch (error) {
+        // pass the error to the error handling middleware
+        next(error);
+    }
+});
+
 
 app.get("/api/persons/:id", (req, res) => {
     const id = Number(req.params.id);
