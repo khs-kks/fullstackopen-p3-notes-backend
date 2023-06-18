@@ -56,13 +56,19 @@ app.get("/info", async (req, res, next) => {
 
 
 app.get("/api/persons/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find(person => person.id === id);
-    if (person) {
-        res.json(person);
-    } else {
-        res.status(404).end();
-    }
+    const id = req.params.id
+    Person.findById(id)
+        .then(person => {
+            if (person) {
+                res.json(person);
+            } else {
+                res.status(404).json({ error: "Person not found" });
+            }
+        })
+        .catch(error => {
+            console.log(error.message);
+            res.status(404).json({ error: "Person not found" });
+        });
 })
 
 app.delete("/api/persons/:id", (req, res, next) => {
