@@ -65,14 +65,14 @@ app.post("/api/persons", async (req, res) => {
     const body = req.body;
     if (!body.name || !body.number) {
         return res.status(400).json({
-            error: "name or number missing"
+            error: "name or number missing!"
         })
     }
 
     const existingPerson = await Person.findOne({ name: body.name });
     if (existingPerson) {
         return res.status(400).json({
-            error: "name must be unique"
+            error: "name must be unique!"
         })
     }
 
@@ -97,13 +97,13 @@ app.put('/api/persons/:id', (req, res, next) => {
         .then(person => {
             // If the person with the specified id is not found, throw an error
             if (person === null) {
-                const error = new Error('Person not found');
+                const error = new Error('Person not found!');
                 error.name = 'NotFoundError';
                 next(error);
             } else {
                 // If the person with the specified id is found and the number is empty or name is the same as the existing person object, throw an error
                 if (number === '' || person.name !== name) {
-                    const error = new Error('Number cannot be empty and name must be the same as the existing person object');
+                    const error = new Error('Number cannot be empty and name must be the same as the existing person object!');
                     error.name = 'ValidationError';
                     next(error);
                 } else {
@@ -138,7 +138,7 @@ const unknownEndpoint = (req, res) => {
 app.use(unknownEndpoint);
 
 const errorHandler = (error, req, res, next) => {
-    const errorMessage = error.message || 'Internal Server Error';
+    const errorMessage = error.message || 'Internal Server Error!';
     res.status(500).send(errorMessage);
 };
 
