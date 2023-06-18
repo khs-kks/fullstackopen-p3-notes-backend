@@ -84,75 +84,70 @@ app.delete("/api/persons/:id", (req, res, next) => {
         .catch(next);
 });
 
-app.post("/api/persons", async (req, res) => {
-    const body = req.body;
-    if (!body.name || !body.number) {
-        return res.status(400).json({
-            error: "name or number missing!"
-        })
-    }
+// app.post("/api/persons", async (req, res) => {
+//     const body = req.body;
+//     if (!body.name || !body.number) {
+//         return res.status(400).json({
+//             error: "name or number missing!"
+//         })
+//     }
 
-    const existingPerson = await Person.findOne({ name: body.name });
-    if (existingPerson) {
-        return res.status(400).json({
-            error: "name must be unique!"
-        })
-    }
+//     const existingPerson = await Person.findOne({ name: body.name });
+//     if (existingPerson) {
+//         return res.status(400).json({
+//             error: "name must be unique!"
+//         })
+//     }
 
-    const newPerson = new Person({
-        name: body.name,
-        number: body.number
+//     const newPerson = new Person({
+//         name: body.name,
+//         number: body.number
+//     });
+
+//     const savedPerson = await newPerson.save();
+//     res.status(201).json(savedPerson);
+// });
+
+app.post("/api/persons", async (req, res, next) => {
+    const person = new Person({
+        name: req.body.name,
+        number: req.body.number,
     });
 
-    const savedPerson = await newPerson.save();
-    res.status(201).json(savedPerson);
+    try {
+        const savedPerson = await person.save({ runValidators: true });
+        res.status(201).json(savedPerson);
+    } catch (error) {
+        next(error)
+    }
 });
 
-// This block of code handles the PUT request to update a person's details
-app.put('/api/persons/:id', (req, res, next) => {
-    // Destructure the name and number from the request body
-    const { name, number } = req.body;
-    // Get the id from the request parameters
-    const id = req.params.id;
+app.put("/api/persons/:id", async (req, res, next) => {
+    const person = {
+        name: req.body.name,
+        number: req.body.number,
+    };
 
-    // Find the person with the specified id in Mongo
-    Person.findById(id)
-        .then(person => {
-            // If the person with the specified id is not found, throw an error
-            if (person === null) {
-                const error = new Error('Person not found!');
-                error.name = 'NotFoundError';
-                next(error);
-            } else {
-                // If the person with the specified id is found and the number is empty or name is the same as the existing person object, throw an error
-                if (number === '' || person.name !== name) {
-                    const error = new Error('Number cannot be empty and name must be the same as the existing person object!');
-                    error.name = 'ValidationError';
-                    next(error);
-                } else {
-                    // If the person with the specified id is found and the number is different, update their number
-                    if (person.number !== number) {
-                        person.number = number;
-                        // Save the updated person object
-                        return person.save();
-                    } else {
-                        // If the number is not changed, return the existing person object
-                        return person;
-                    }
-                }
+    try {
+        const updatedPerson = await Person.findByIdAndUpdate(
+            req.params.id,
+            person,
+            {
+                new: true,
+                runValidators: true,
+                context: 'query'
             }
-        })
-        .then(updatedPerson => {
-            // Send the updated person object as a JSON response
-            res.json(updatedPerson);
-        })
-        .catch(error => {
-            // Pass any errors to the error handling middleware
-            next(error);
-        });
+        );
+
+        if (!updatedPerson) {
+            return res.status(404).json({ error: "person not found" });
+        }
+
+        res.json(updatedPerson);
+    } catch (err) {
+        next(err);
+    }
 });
-
-
 
 const unknownEndpoint = (req, res) => {
     res.status(404).json({ error: "unknown endpoint" });
@@ -160,10 +155,22 @@ const unknownEndpoint = (req, res) => {
 
 app.use(unknownEndpoint);
 
-const errorHandler = (error, req, res, next) => {
-    const errorMessage = error.message || 'Internal Server Error!';
-    res.status(500).send(errorMessage);
-};
+// const errorHandler = (error, req, res, next) => {
+//     const errorMessage = error.message || 'Internal Server Error!';
+//     res.status(500).send(errorMessage);
+// };
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError' && error.kind == 'ObjectId') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
+
+    next(error)
+}
 
 app.use(errorHandler);
 

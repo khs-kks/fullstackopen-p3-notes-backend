@@ -5,8 +5,8 @@ POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-  "name": "ok123",
-  "number": "555-1234"
+  "name": "ok3",
+  "number": "5554"
 }
 
 ### POST /api/persons with missing name
